@@ -1,0 +1,57 @@
+AC_INIT(configure.in)
+AC_CONFIG_AUX_DIR(config)
+
+VERSION=0.0.1
+PACKAGE=libsean
+
+AM_INIT_AUTOMAKE($PACKAGE, $VERSION, no-define)
+AC_SUBST(VERSION)
+
+AC_CONFIG_HEADERS(include/config.h)
+
+AC_PROG_CC
+AC_HEADER_STDC
+
+AC_DISABLE_STATIC
+AC_PROG_LIBTOOL
+
+AM_PATH_GTK_2_0(2.4.0, have_gtk2=true)
+AM_CONDITIONAL([HAVE_GTK], test "x$have_gtk2" = "xtrue")
+
+# glib
+AM_PATH_GLIB_2_0(2.0.0,,AC_MSG_ERROR([glib >= 2.0 is needed]))
+
+# gdk-pixbuf
+PKG_CHECK_MODULES(GDKPIXBUF, gdk-pixbuf-2.0 >= 2.0.0,,
+	AC_MSG_ERROR([GDK-Pixbuf >= 2.0.0 is required]))
+
+# gstreamer
+PKG_CHECK_MODULES(GST, gstreamer-0.10 >= 0.10.0,,
+	AC_MSG_ERROR([GStreamer 0.10.x is required]))
+
+# debug
+AC_MSG_CHECKING([for debug level])
+AC_ARG_ENABLE(debug,
+	[[  --enable-debug[=LVL]    enable debug level LVL or 1 (default is 0)]],
+	[if test "$enableval" = "yes" ; then DEBUG=1; else DEBUG=$enableval; fi],
+	DEBUG=0)
+AC_MSG_RESULT($DEBUG)
+AC_SUBST(DEBUG)
+
+if test "$DEBUG" = "0"; then
+	DBG_CFLAGS="-O2"
+else
+	DBG_CFLAGS="-g"
+fi
+AC_SUBST(DBG_CFLAGS)
+
+# output
+AC_OUTPUT(
+	Makefile
+	m4/Makefile
+	include/Makefile
+	src/Makefile
+	programs/Makefile
+	tests/Makefile
+	libsean.pc
+)
